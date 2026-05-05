@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JobCam">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="manifest" href="manifest.json">
+<title>JobCam</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --surface: #161616;
+  --surface2: #1e1e1e;
+  --border: #2a2a2a;
+  --orange: #ff6a00;
+  --orange-glow: rgba(255,106,0,0.15);
+  --red: #e83030;
+  --text: #e8e8e0;
+  --muted: #777;
+  --mono: 'Share Tech Mono', monospace;
+  --cond: 'Barlow Condensed', sans-serif;
+  --body: 'Barlow', sans-serif;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tab-h: 60px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); overscroll-behavior: none; }
+body {
+  color: var(--text); font-family: var(--body);
+  padding-top: var(--safe-top);
+  padding-bottom: calc(var(--safe-bottom) + var(--tab-h));
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── HEADER ── */
+header {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--bg); border-bottom: 1px solid var(--border);
+  padding: 14px 16px 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.app-title {
+  font-family: var(--cond); font-size: 22px; font-weight: 800;
+  letter-spacing: .06em; color: var(--orange);
+}
+.app-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: .1em; }
+.header-count { font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: right; }
+
+/* ── TAB BAR ── */
+.tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--bg); border-top: 1px solid var(--border);
+  display: flex; height: calc(var(--tab-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+}
+.tab-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 3px; cursor: pointer; border: none;
+  background: none; color: var(--muted); font-family: var(--cond);
+  font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  transition: color .15s;
+}
+.tab-item svg { width: 22px; height: 22px; stroke-width: 1.5; }
+.tab-item.active { color: var(--orange); }
+
+/* ── PAGES ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── CAMERA PAGE ── */
+#page-cam {
+  display: flex; flex-direction: column;
+  height: calc(100vh - var(--safe-top) - var(--tab-h) - var(--safe-bottom) - 57px);
+}
+.cam-hero {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 0; background: #000; position: relative;
+  overflow: hidden;
+}
+.cam-hero-bg {
+  position: absolute; inset: 0; opacity: .06;
+  background: repeating-linear-gradient(0deg, transparent, transparent 40px, #ff6a00 40px, #ff6a00 41px),
+              repeating-linear-gradient(90deg, transparent, transparent 40px, #ff6a00 40px, #ff6a00 41px);
+}
+.cam-reticle {
+  position: relative; width: 180px; height: 180px; margin-bottom: 32px;
+}
+.cam-reticle::before, .cam-reticle::after {
+  content: ''; position: absolute; width: 36px; height: 36px;
+  border-color: var(--orange); border-style: solid;
+}
+.cam-reticle::before { top: 0; left: 0; border-width: 3px 0 0 3px; }
+.cam-reticle::after  { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
+.cam-reticle-tr, .cam-reticle-bl {
+  position: absolute; width: 36px; height: 36px;
+  border-color: var(--orange); border-style: solid;
+}
+.cam-reticle-tr { top: 0; right: 0; border-width: 3px 3px 0 0; }
+.cam-reticle-bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; }
+.cam-icon { color: rgba(255,106,0,.25); }
+.cam-icon svg { width: 72px; height: 72px; }
+.cam-ready-text {
+  position: absolute; bottom: 16px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .15em;
+  color: rgba(255,106,0,.5); text-transform: uppercase;
+}
+.cam-controls {
+  background: var(--bg); padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  border-top: 1px solid var(--border);
+}
+#quick-note {
+  width: 100%; background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: 13px;
+  padding: 11px 12px; outline: none;
+}
+#quick-note:focus { border-color: var(--orange); }
+#quick-note::placeholder { color: var(--muted); }
+.btn-capture {
+  width: 100%; padding: 18px; background: var(--orange);
+  border: none; color: #000; font-family: var(--cond);
+  font-size: 20px; font-weight: 800; letter-spacing: .1em;
+  cursor: pointer; text-transform: uppercase; transition: opacity .1s;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.btn-capture:active { opacity: .75; transform: scale(.98); }
+.btn-capture svg { width: 22px; height: 22px; }
+#file-input { display: none; }
+
+/* ── GALLERY PAGE ── */
+.gallery-toolbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  background: var(--bg); position: sticky; top: 57px; z-index: 40;
+}
+.gallery-toolbar select {
+  flex: 1; background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: 12px;
+  padding: 8px 10px; outline: none;
+}
+.gallery-toolbar select:focus { border-color: var(--orange); }
+.btn-delete-sel {
+  padding: 8px 12px; background: none; border: 1px solid var(--border);
+  color: var(--muted); font-family: var(--mono); font-size: 11px;
+  cursor: pointer; white-space: nowrap; display: none;
+}
+.btn-delete-sel.show { display: block; color: var(--red); border-color: var(--red); }
+
+.date-group { margin-bottom: 4px; }
+.date-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em;
+  color: var(--muted); text-transform: uppercase;
+  padding: 10px 16px 6px; background: var(--bg);
+  position: sticky; top: 109px; z-index: 30;
+}
+.photo-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+  padding: 0 2px;
+}
+.photo-thumb {
+  aspect-ratio: 1; position: relative; overflow: hidden; cursor: pointer;
+  background: var(--surface);
+}
+.photo-thumb img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: opacity .15s;
+}
+.photo-thumb.selected::after {
+  content: '✓'; position: absolute; inset: 0;
+  background: rgba(255,106,0,.5); display: flex; align-items: center;
+  justify-content: center; font-size: 28px; font-weight: bold; color: #fff;
+}
+.photo-thumb .note-badge {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,.7); font-family: var(--mono); font-size: 9px;
+  color: #ccc; padding: 3px 5px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.empty-state {
+  text-align: center; padding: 60px 24px;
+  font-family: var(--mono); font-size: 12px; color: var(--muted); line-height: 2;
+}
+.empty-state svg { width: 48px; height: 48px; opacity: .2; margin-bottom: 12px; }
+
+/* ── LIGHTBOX ── */
+#lightbox {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.96); flex-direction: column;
+  align-items: center; justify-content: center;
+}
+#lightbox.open { display: flex; }
+#lb-img { max-width: 100%; max-height: 70vh; object-fit: contain; }
+.lb-meta {
+  padding: 16px; text-align: center;
+  font-family: var(--mono); font-size: 12px; color: var(--muted); line-height: 1.8;
+}
+.lb-note { color: var(--text); font-size: 14px; margin-bottom: 4px; }
+.lb-actions { display: flex; gap: 10px; padding: 0 16px 16px; width: 100%; }
+.lb-btn {
+  flex: 1; padding: 13px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text);
+  font-family: var(--cond); font-size: 14px; font-weight: 700;
+  letter-spacing: .05em; cursor: pointer; text-transform: uppercase;
+}
+.lb-btn.danger { border-color: var(--red); color: var(--red); }
+.lb-close {
+  position: absolute; top: calc(var(--safe-top) + 12px); right: 16px;
+  background: none; border: none; color: var(--muted); font-size: 28px;
+  cursor: pointer; line-height: 1; padding: 4px 8px;
+}
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: calc(var(--tab-h) + var(--safe-bottom) + 12px);
+  left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface2); border: 1px solid var(--border);
+  font-family: var(--mono); font-size: 12px; color: var(--text);
+  padding: 10px 18px; white-space: nowrap; opacity: 0;
+  transition: all .2s; z-index: 300; pointer-events: none;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── CANVAS (hidden, for capture) ── */
+#snap-canvas { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="app-title">JOBCAM</div>
+    <div class="app-sub">WORK PHOTO ORGANIZER</div>
+  </div>
+  <div class="header-count" id="header-count"></div>
+</header>
+
+<!-- CAMERA PAGE -->
+<div class="page active" id="page-cam">
+  <div class="cam-hero">
+    <div class="cam-hero-bg"></div>
+    <div class="cam-reticle">
+      <div class="cam-reticle-tr"></div>
+      <div class="cam-reticle-bl"></div>
+      <div class="cam-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </div>
+    </div>
+    <div class="cam-ready-text">READY TO SHOOT</div>
+  </div>
+  <div class="cam-controls">
+    <input type="text" id="quick-note" placeholder="Quick note before shooting (optional)…" maxlength="80">
+    <button class="btn-capture" onclick="openCamera()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg>
+      TAKE PHOTO
+    </button>
+  </div>
+  <!-- capture="environment" opens rear camera directly, works in iOS standalone -->
+  <input type="file" id="file-input" accept="image/*" capture="environment" onchange="handleCapture(this)">
+</div>
+
+<!-- GALLERY PAGE -->
+<div class="page" id="page-gallery">
+  <div class="gallery-toolbar">
+    <select id="date-filter" onchange="renderGallery()">
+      <option value="all">All Dates</option>
+    </select>
+    <button class="btn-delete-sel" id="btn-delete-sel" onclick="deleteSelected()">DELETE SELECTED</button>
+  </div>
+  <div id="gallery-content"></div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <button class="lb-close" onclick="closeLightbox()">×</button>
+  <img id="lb-img" src="" alt="">
+  <div class="lb-meta">
+    <div class="lb-note" id="lb-note"></div>
+    <div id="lb-date"></div>
+  </div>
+  <div class="lb-actions">
+    <button class="lb-btn" onclick="sharePhoto()">SHARE</button>
+    <button class="lb-btn danger" onclick="deletePhoto()">DELETE</button>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-item active" onclick="showPage('cam', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    Camera
+  </button>
+  <button class="tab-item" onclick="showPage('gallery', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    Gallery
+  </button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── STORAGE ────────────────────────────────────────────
+const DB_KEY = 'jobcam_photos';
+let photos = [];
+let selectedIds = new Set();
+let lightboxId = null;
+
+function load() {
+  try {
+    const raw = localStorage.getItem(DB_KEY);
+    photos = raw ? JSON.parse(raw) : [];
+  } catch { photos = []; }
+}
+function save() {
+  try { localStorage.setItem(DB_KEY, JSON.stringify(photos)); } catch(e) {
+    toast('Storage full — delete old photos to free space');
+  }
+}
+
+// ── CAMERA ────────────────────────────────────────────
+function openCamera() {
+  document.getElementById('file-input').click();
+}
+
+function handleCapture(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  const note = document.getElementById('quick-note').value.trim();
+  let done = 0;
+  files.forEach(file => {
+    // resize large images before storing to save space
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1600;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          const ratio = Math.min(MAX/w, MAX/h);
+          w = Math.round(w * ratio); h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        addPhoto(dataUrl, note, new Date(file.lastModified || Date.now()));
+        done++;
+        if (done === files.length) {
+          toast(`${files.length} photo${files.length>1?'s':''} saved`);
+          document.getElementById('quick-note').value = '';
+          // pulse the reticle
+          const reticle = document.querySelector('.cam-reticle');
+          reticle.style.opacity = '0.3';
+          setTimeout(() => reticle.style.opacity = '1', 200);
+        }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function addPhoto(dataUrl, note, date) {
+  const id = Date.now() + Math.random().toString(36).slice(2);
+  photos.unshift({ id, dataUrl, note: note||'', date: (date||new Date()).toISOString() });
+  save();
+  updateHeaderCount();
+  updateDateFilter();
+}
+
+// ── GALLERY ────────────────────────────────────────────
+function groupByDate(list) {
+  const groups = {};
+  list.forEach(p => {
+    const d = new Date(p.date);
+    const key = d.toLocaleDateString('en-CA'); // YYYY-MM-DD
+    const label = d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    if (!groups[key]) groups[key] = { label, items:[] };
+    groups[key].items.push(p);
+  });
+  return Object.entries(groups).sort((a,b) => b[0].localeCompare(a[0]));
+}
+
+function renderGallery() {
+  const filter = document.getElementById('date-filter').value;
+  let list = filter === 'all' ? photos : photos.filter(p => {
+    const d = new Date(p.date).toLocaleDateString('en-CA');
+    return d === filter;
+  });
+
+  const el = document.getElementById('gallery-content');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <div>No photos yet.<br>Go to Camera to add some.</div>
+    </div>`;
+    return;
+  }
+
+  const groups = groupByDate(list);
+  el.innerHTML = groups.map(([key, grp]) => `
+    <div class="date-group">
+      <div class="date-label">${grp.label} · ${grp.items.length} photo${grp.items.length>1?'s':''}</div>
+      <div class="photo-grid">
+        ${grp.items.map(p => `
+          <div class="photo-thumb${selectedIds.has(p.id)?' selected':''}" id="thumb-${p.id}"
+               onclick="thumbClick('${p.id}')" oncontextmenu="thumbLongPress('${p.id}');return false;">
+            <img src="${p.dataUrl}" loading="lazy" alt="">
+            ${p.note ? `<div class="note-badge">${escHtml(p.note)}</div>` : ''}
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function thumbClick(id) {
+  if (selectedIds.size > 0) {
+    toggleSelect(id);
+  } else {
+    openLightbox(id);
+  }
+}
+function thumbLongPress(id) {
+  toggleSelect(id);
+}
+function toggleSelect(id) {
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  const thumb = document.getElementById('thumb-'+id);
+  if (thumb) thumb.classList.toggle('selected', selectedIds.has(id));
+  const btn = document.getElementById('btn-delete-sel');
+  btn.classList.toggle('show', selectedIds.size > 0);
+  btn.textContent = selectedIds.size > 0 ? `DELETE ${selectedIds.size} PHOTO${selectedIds.size>1?'S':''}` : '';
+}
+function deleteSelected() {
+  if (!selectedIds.size) return;
+  if (!confirm(`Delete ${selectedIds.size} photo${selectedIds.size>1?'s':''}? This cannot be undone.`)) return;
+  photos = photos.filter(p => !selectedIds.has(p.id));
+  selectedIds.clear();
+  save(); updateHeaderCount(); updateDateFilter(); renderGallery();
+  document.getElementById('btn-delete-sel').classList.remove('show');
+  toast('Photos deleted');
+}
+
+function updateDateFilter() {
+  const sel = document.getElementById('date-filter');
+  const current = sel.value;
+  const dates = [...new Set(photos.map(p => new Date(p.date).toLocaleDateString('en-CA')))].sort().reverse();
+  sel.innerHTML = '<option value="all">All Dates</option>' +
+    dates.map(d => {
+      const label = new Date(d+'T12:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+      return `<option value="${d}"${d===current?' selected':''}>${label}</option>`;
+    }).join('');
+}
+
+function updateHeaderCount() {
+  const el = document.getElementById('header-count');
+  el.innerHTML = `<div>${photos.length} PHOTO${photos.length!==1?'S':''}</div>`;
+}
+
+// ── LIGHTBOX ────────────────────────────────────────────
+function openLightbox(id) {
+  const p = photos.find(x => x.id === id);
+  if (!p) return;
+  lightboxId = id;
+  document.getElementById('lb-img').src = p.dataUrl;
+  document.getElementById('lb-note').textContent = p.note || '';
+  document.getElementById('lb-date').textContent = new Date(p.date).toLocaleString('en-US', {
+    weekday:'short', month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'
+  });
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lb-img').src = '';
+  lightboxId = null;
+}
+function deletePhoto() {
+  if (!lightboxId) return;
+  if (!confirm('Delete this photo?')) return;
+  photos = photos.filter(p => p.id !== lightboxId);
+  save(); updateHeaderCount(); updateDateFilter(); renderGallery();
+  closeLightbox();
+  toast('Photo deleted');
+}
+async function sharePhoto() {
+  const p = photos.find(x => x.id === lightboxId);
+  if (!p) return;
+  try {
+    const res = await fetch(p.dataUrl);
+    const blob = await res.blob();
+    const file = new File([blob], `jobcam-${lightboxId}.jpg`, { type: 'image/jpeg' });
+    if (navigator.share && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: p.note || 'Job photo' });
+    } else {
+      // fallback: download
+      const a = document.createElement('a');
+      a.href = p.dataUrl; a.download = `jobcam-${lightboxId}.jpg`; a.click();
+    }
+  } catch(e) { if (e.name !== 'AbortError') toast('Could not share photo'); }
+}
+
+// ── UTILS ────────────────────────────────────────────
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'gallery') { renderGallery(); }
+}
+
+// close lightbox on back/escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+document.getElementById('lightbox').addEventListener('click', e => {
+  if (e.target === document.getElementById('lightbox')) closeLightbox();
+});
+
+// PWA service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ── INIT ────────────────────────────────────────────
+load();
+updateHeaderCount();
+updateDateFilter();
+</script>
+</body>
+</html>

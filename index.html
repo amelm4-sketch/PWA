@@ -248,7 +248,7 @@ header {
     <div class="cam-field-label">Priority</div>
     <div class="priority-row">
       <button class="pri-btn" data-pri="1" onclick="setPriority(1)">
-        <span class="pri-emoji">⚡</span>
+        <span class="pri-emoji">⚡⚡⚡</span>
         <span class="pri-label">High</span>
       </button>
       <button class="pri-btn" data-pri="2" onclick="setPriority(2)">
@@ -256,7 +256,7 @@ header {
         <span class="pri-label">Medium</span>
       </button>
       <button class="pri-btn" data-pri="3" onclick="setPriority(3)">
-        <span class="pri-emoji">⚡⚡⚡</span>
+        <span class="pri-emoji">⚡</span>
         <span class="pri-label">Low</span>
       </button>
     </div>
@@ -377,7 +377,7 @@ function handleCapture(input) {
         addPhoto(dataUrl, note, pri, new Date(file.lastModified || Date.now()));
         done++;
         if (done === files.length) {
-          const priLabel = pri === 1 ? ' ⚡' : pri === 2 ? ' ⚡⚡' : pri === 3 ? ' ⚡⚡⚡' : '';
+          const priLabel = pri === 1 ? ' ⚡⚡⚡' : pri === 2 ? ' ⚡⚡' : pri === 3 ? ' ⚡' : '';
           toast(`Photo saved${priLabel}`);
           document.getElementById('quick-note').value = '';
           setPriority(0);
@@ -439,7 +439,7 @@ function renderGallery() {
     // group by priority level
     const priGroups = { 1: [], 2: [], 3: [], 0: [] };
     list.forEach(p => { priGroups[p.priority || 0].push(p); });
-    const priLabels = { 1: '⚡ High Priority', 2: '⚡⚡ Medium Priority', 3: '⚡⚡⚡ Low Priority', 0: 'No Priority' };
+    const priLabels = { 1: '⚡⚡⚡ High Priority', 2: '⚡⚡ Medium Priority', 3: '⚡ Low Priority', 0: 'No Priority' };
     el.innerHTML = [1, 2, 3, 0].filter(k => priGroups[k].length > 0).map(k => `
       <div class="date-group">
         <div class="date-label">${priLabels[k]} · ${priGroups[k].length} photo${priGroups[k].length>1?'s':''}</div>
@@ -460,7 +460,7 @@ function renderGallery() {
 }
 
 function thumbHTML(p) {
-  const priEmoji = p.priority === 1 ? '⚡' : p.priority === 2 ? '⚡⚡' : p.priority === 3 ? '⚡⚡⚡' : '';
+  const priEmoji = p.priority === 1 ? '⚡⚡⚡' : p.priority === 2 ? '⚡⚡' : p.priority === 3 ? '⚡' : '';
   return `<div class="photo-thumb${selectedIds.has(p.id)?' selected':''}" id="thumb-${p.id}"
     onclick="thumbClick('${p.id}')" oncontextmenu="thumbLongPress('${p.id}');return false;">
     <img src="${p.dataUrl}" loading="lazy" alt="">
@@ -520,7 +520,7 @@ function openLightbox(id) {
   if (!p) return;
   lightboxId = id;
   document.getElementById('lb-img').src = p.dataUrl;
-  const priEmoji = p.priority === 1 ? '⚡ High' : p.priority === 2 ? '⚡⚡ Medium' : p.priority === 3 ? '⚡⚡⚡ Low' : '';
+  const priEmoji = p.priority === 1 ? '⚡⚡⚡ High' : p.priority === 2 ? '⚡⚡ Medium' : p.priority === 3 ? '⚡ Low' : '';
   document.getElementById('lb-note').textContent = p.note || '';
   document.getElementById('lb-date').textContent =
     (priEmoji ? priEmoji + '  ·  ' : '') +

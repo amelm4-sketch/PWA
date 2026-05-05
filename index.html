@@ -74,59 +74,49 @@ header {
 
 /* ── CAMERA PAGE ── */
 #page-cam {
-  display: flex; flex-direction: column;
-  height: calc(100vh - var(--safe-top) - var(--tab-h) - var(--safe-bottom) - 57px);
+  display: flex; flex-direction: column; padding: 24px 16px; gap: 16px;
 }
-.cam-hero {
-  flex: 1; display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 0; background: #000; position: relative;
-  overflow: hidden;
-}
-.cam-hero-bg {
-  position: absolute; inset: 0; opacity: .06;
-  background: repeating-linear-gradient(0deg, transparent, transparent 40px, #ff6a00 40px, #ff6a00 41px),
-              repeating-linear-gradient(90deg, transparent, transparent 40px, #ff6a00 40px, #ff6a00 41px);
-}
-.cam-reticle {
-  position: relative; width: 180px; height: 180px; margin-bottom: 32px;
-}
-.cam-reticle::before, .cam-reticle::after {
-  content: ''; position: absolute; width: 36px; height: 36px;
-  border-color: var(--orange); border-style: solid;
-}
-.cam-reticle::before { top: 0; left: 0; border-width: 3px 0 0 3px; }
-.cam-reticle::after  { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
-.cam-reticle-tr, .cam-reticle-bl {
-  position: absolute; width: 36px; height: 36px;
-  border-color: var(--orange); border-style: solid;
-}
-.cam-reticle-tr { top: 0; right: 0; border-width: 3px 3px 0 0; }
-.cam-reticle-bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; }
-.cam-icon { color: rgba(255,106,0,.25); }
-.cam-icon svg { width: 72px; height: 72px; }
-.cam-ready-text {
-  position: absolute; bottom: 16px;
+.cam-field-label {
   font-family: var(--mono); font-size: 10px; letter-spacing: .15em;
-  color: rgba(255,106,0,.5); text-transform: uppercase;
-}
-.cam-controls {
-  background: var(--bg); padding: 16px;
-  display: flex; flex-direction: column; gap: 10px;
-  border-top: 1px solid var(--border);
+  color: var(--muted); text-transform: uppercase; margin-bottom: 6px;
 }
 #quick-note {
   width: 100%; background: var(--surface); border: 1px solid var(--border);
-  color: var(--text); font-family: var(--mono); font-size: 13px;
-  padding: 11px 12px; outline: none;
+  color: var(--text); font-family: var(--mono); font-size: 14px;
+  padding: 13px 12px; outline: none;
 }
 #quick-note:focus { border-color: var(--orange); }
 #quick-note::placeholder { color: var(--muted); }
+
+/* Priority selector */
+.priority-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.pri-btn {
+  padding: 14px 8px; background: var(--surface); border: 1px solid var(--border);
+  cursor: pointer; text-align: center; transition: all .12s;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.pri-btn .pri-emoji { font-size: 22px; line-height: 1; }
+.pri-btn .pri-label {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .1em;
+  color: var(--muted); text-transform: uppercase;
+}
+.pri-btn.active { border-color: var(--orange); background: var(--orange-glow); }
+.pri-btn.active .pri-label { color: var(--orange); }
+.pri-none {
+  padding: 10px; background: var(--surface); border: 1px solid var(--border);
+  cursor: pointer; font-family: var(--mono); font-size: 10px;
+  letter-spacing: .1em; color: var(--muted); text-align: center;
+  text-transform: uppercase; transition: all .12s;
+}
+.pri-none.active { border-color: var(--border); background: var(--surface2); color: var(--text); }
+
 .btn-capture {
-  width: 100%; padding: 18px; background: var(--orange);
+  width: 100%; padding: 20px; background: var(--orange);
   border: none; color: #000; font-family: var(--cond);
-  font-size: 20px; font-weight: 800; letter-spacing: .1em;
-  cursor: pointer; text-transform: uppercase; transition: opacity .1s;
+  font-size: 22px; font-weight: 800; letter-spacing: .1em;
+  cursor: pointer; text-transform: uppercase; transition: all .1s;
   display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-top: 8px;
 }
 .btn-capture:active { opacity: .75; transform: scale(.98); }
 .btn-capture svg { width: 22px; height: 22px; }
@@ -144,6 +134,15 @@ header {
   padding: 8px 10px; outline: none;
 }
 .gallery-toolbar select:focus { border-color: var(--orange); }
+.sort-btn {
+  padding: 8px 10px; background: var(--surface); border: 1px solid var(--border);
+  font-size: 16px; cursor: pointer; transition: all .12s; flex-shrink: 0;
+}
+.sort-btn.active { border-color: var(--orange); background: var(--orange-glow); }
+.pri-badge {
+  position: absolute; top: 4px; right: 4px;
+  font-size: 10px; line-height: 1;
+}
 .btn-delete-sel {
   padding: 8px 12px; background: none; border: 1px solid var(--border);
   color: var(--muted); font-family: var(--mono); font-size: 11px;
@@ -241,25 +240,32 @@ header {
 
 <!-- CAMERA PAGE -->
 <div class="page active" id="page-cam">
-  <div class="cam-hero">
-    <div class="cam-hero-bg"></div>
-    <div class="cam-reticle">
-      <div class="cam-reticle-tr"></div>
-      <div class="cam-reticle-bl"></div>
-      <div class="cam-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-      </div>
+  <div>
+    <div class="cam-field-label">Note</div>
+    <input type="text" id="quick-note" placeholder="Panel #, location, circuit…" maxlength="80">
+  </div>
+  <div>
+    <div class="cam-field-label">Priority</div>
+    <div class="priority-row">
+      <button class="pri-btn" data-pri="1" onclick="setPriority(1)">
+        <span class="pri-emoji">⚡</span>
+        <span class="pri-label">High</span>
+      </button>
+      <button class="pri-btn" data-pri="2" onclick="setPriority(2)">
+        <span class="pri-emoji">⚡⚡</span>
+        <span class="pri-label">Medium</span>
+      </button>
+      <button class="pri-btn" data-pri="3" onclick="setPriority(3)">
+        <span class="pri-emoji">⚡⚡⚡</span>
+        <span class="pri-label">Low</span>
+      </button>
     </div>
-    <div class="cam-ready-text">READY TO SHOOT</div>
+    <button class="pri-none active" id="pri-none-btn" onclick="setPriority(0)">No Priority</button>
   </div>
-  <div class="cam-controls">
-    <input type="text" id="quick-note" placeholder="Quick note before shooting (optional)…" maxlength="80">
-    <button class="btn-capture" onclick="openCamera()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg>
-      TAKE PHOTO
-    </button>
-  </div>
-  <!-- capture="environment" opens rear camera directly, works in iOS standalone -->
+  <button class="btn-capture" onclick="openCamera()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg>
+    TAKE PHOTO
+  </button>
   <input type="file" id="file-input" accept="image/*" capture="environment" onchange="handleCapture(this)">
 </div>
 
@@ -269,6 +275,8 @@ header {
     <select id="date-filter" onchange="renderGallery()">
       <option value="all">All Dates</option>
     </select>
+    <button class="sort-btn active" id="sort-date" onclick="setSort('date')">📅</button>
+    <button class="sort-btn" id="sort-pri" onclick="setSort('priority')">⚡</button>
     <button class="btn-delete-sel" id="btn-delete-sel" onclick="deleteSelected()">DELETE SELECTED</button>
   </div>
   <div id="gallery-content"></div>
@@ -308,6 +316,8 @@ const DB_KEY = 'jobcam_photos';
 let photos = [];
 let selectedIds = new Set();
 let lightboxId = null;
+let currentPriority = 0;
+let currentSort = 'date';
 
 function load() {
   try {
@@ -321,6 +331,23 @@ function save() {
   }
 }
 
+// ── PRIORITY ──────────────────────────────────────────
+function setPriority(p) {
+  currentPriority = p;
+  document.querySelectorAll('.pri-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.pri) === p);
+  });
+  document.getElementById('pri-none-btn').classList.toggle('active', p === 0);
+}
+
+function setSort(mode) {
+  currentSort = mode;
+  document.getElementById('sort-date').classList.toggle('active', mode === 'date');
+  document.getElementById('sort-pri').classList.toggle('active', mode === 'priority');
+  document.getElementById('date-filter').style.display = mode === 'priority' ? 'none' : '';
+  renderGallery();
+}
+
 // ── CAMERA ────────────────────────────────────────────
 function openCamera() {
   document.getElementById('file-input').click();
@@ -330,9 +357,9 @@ function handleCapture(input) {
   const files = Array.from(input.files);
   if (!files.length) return;
   const note = document.getElementById('quick-note').value.trim();
+  const pri = currentPriority;
   let done = 0;
   files.forEach(file => {
-    // resize large images before storing to save space
     const reader = new FileReader();
     reader.onload = e => {
       const img = new Image();
@@ -347,15 +374,13 @@ function handleCapture(input) {
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
-        addPhoto(dataUrl, note, new Date(file.lastModified || Date.now()));
+        addPhoto(dataUrl, note, pri, new Date(file.lastModified || Date.now()));
         done++;
         if (done === files.length) {
-          toast(`${files.length} photo${files.length>1?'s':''} saved`);
+          const priLabel = pri === 1 ? ' ⚡' : pri === 2 ? ' ⚡⚡' : pri === 3 ? ' ⚡⚡⚡' : '';
+          toast(`Photo saved${priLabel}`);
           document.getElementById('quick-note').value = '';
-          // pulse the reticle
-          const reticle = document.querySelector('.cam-reticle');
-          reticle.style.opacity = '0.3';
-          setTimeout(() => reticle.style.opacity = '1', 200);
+          setPriority(0);
         }
       };
       img.src = e.target.result;
@@ -365,9 +390,9 @@ function handleCapture(input) {
   input.value = '';
 }
 
-function addPhoto(dataUrl, note, date) {
+function addPhoto(dataUrl, note, priority, date) {
   const id = Date.now() + Math.random().toString(36).slice(2);
-  photos.unshift({ id, dataUrl, note: note||'', date: (date||new Date()).toISOString() });
+  photos.unshift({ id, dataUrl, note: note||'', priority: priority||0, date: (date||new Date()).toISOString() });
   save();
   updateHeaderCount();
   updateDateFilter();
@@ -388,7 +413,7 @@ function groupByDate(list) {
 
 function renderGallery() {
   const filter = document.getElementById('date-filter').value;
-  let list = filter === 'all' ? photos : photos.filter(p => {
+  let list = filter === 'all' ? [...photos] : photos.filter(p => {
     const d = new Date(p.date).toLocaleDateString('en-CA');
     return d === filter;
   });
@@ -402,19 +427,46 @@ function renderGallery() {
     return;
   }
 
-  const groups = groupByDate(list);
-  el.innerHTML = groups.map(([key, grp]) => `
-    <div class="date-group">
-      <div class="date-label">${grp.label} · ${grp.items.length} photo${grp.items.length>1?'s':''}</div>
-      <div class="photo-grid">
-        ${grp.items.map(p => `
-          <div class="photo-thumb${selectedIds.has(p.id)?' selected':''}" id="thumb-${p.id}"
-               onclick="thumbClick('${p.id}')" oncontextmenu="thumbLongPress('${p.id}');return false;">
-            <img src="${p.dataUrl}" loading="lazy" alt="">
-            ${p.note ? `<div class="note-badge">${escHtml(p.note)}</div>` : ''}
-          </div>`).join('')}
-      </div>
-    </div>`).join('');
+  if (currentSort === 'priority') {
+    // sort: priority 1 first, 2, 3, then 0 (none) at bottom; within same priority newest first
+    list.sort((a, b) => {
+      const pa = a.priority || 0, pb = b.priority || 0;
+      if (pa === 0 && pb !== 0) return 1;
+      if (pb === 0 && pa !== 0) return -1;
+      if (pa !== pb) return pa - pb;
+      return new Date(b.date) - new Date(a.date);
+    });
+    // group by priority level
+    const priGroups = { 1: [], 2: [], 3: [], 0: [] };
+    list.forEach(p => { priGroups[p.priority || 0].push(p); });
+    const priLabels = { 1: '⚡ High Priority', 2: '⚡⚡ Medium Priority', 3: '⚡⚡⚡ Low Priority', 0: 'No Priority' };
+    el.innerHTML = [1, 2, 3, 0].filter(k => priGroups[k].length > 0).map(k => `
+      <div class="date-group">
+        <div class="date-label">${priLabels[k]} · ${priGroups[k].length} photo${priGroups[k].length>1?'s':''}</div>
+        <div class="photo-grid">
+          ${priGroups[k].map(p => thumbHTML(p)).join('')}
+        </div>
+      </div>`).join('');
+  } else {
+    const groups = groupByDate(list);
+    el.innerHTML = groups.map(([key, grp]) => `
+      <div class="date-group">
+        <div class="date-label">${grp.label} · ${grp.items.length} photo${grp.items.length>1?'s':''}</div>
+        <div class="photo-grid">
+          ${grp.items.map(p => thumbHTML(p)).join('')}
+        </div>
+      </div>`).join('');
+  }
+}
+
+function thumbHTML(p) {
+  const priEmoji = p.priority === 1 ? '⚡' : p.priority === 2 ? '⚡⚡' : p.priority === 3 ? '⚡⚡⚡' : '';
+  return `<div class="photo-thumb${selectedIds.has(p.id)?' selected':''}" id="thumb-${p.id}"
+    onclick="thumbClick('${p.id}')" oncontextmenu="thumbLongPress('${p.id}');return false;">
+    <img src="${p.dataUrl}" loading="lazy" alt="">
+    ${priEmoji ? `<div class="pri-badge">${priEmoji}</div>` : ''}
+    ${p.note ? `<div class="note-badge">${escHtml(p.note)}</div>` : ''}
+  </div>`;
 }
 
 function thumbClick(id) {
@@ -468,10 +520,13 @@ function openLightbox(id) {
   if (!p) return;
   lightboxId = id;
   document.getElementById('lb-img').src = p.dataUrl;
+  const priEmoji = p.priority === 1 ? '⚡ High' : p.priority === 2 ? '⚡⚡ Medium' : p.priority === 3 ? '⚡⚡⚡ Low' : '';
   document.getElementById('lb-note').textContent = p.note || '';
-  document.getElementById('lb-date').textContent = new Date(p.date).toLocaleString('en-US', {
-    weekday:'short', month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'
-  });
+  document.getElementById('lb-date').textContent =
+    (priEmoji ? priEmoji + '  ·  ' : '') +
+    new Date(p.date).toLocaleString('en-US', {
+      weekday:'short', month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'
+    });
   document.getElementById('lightbox').classList.add('open');
 }
 function closeLightbox() {
